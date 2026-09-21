@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartControl - Prototipo Interactivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 60px;
+        }
+
+        .prototype-container {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+        }
+
+        /* Smartwatch Frame */
+        .smartwatch-frame {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: #000000;
+            position: relative;
+            box-shadow: 
+                0 0 0 12px #1a1a1a,
+                0 0 0 14px #333,
+                0 20px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .smartwatch-screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            position: relative;
+        }
+
+        /* Connection Indicator */
+        .connection-indicator {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00E676;
+            transition: background 0.3s ease;
+        }
+
+        .connection-indicator.disconnected {
+            background: #FF1744;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Connection Screen */
+        .bluetooth-icon {
+            font-size: 72px;
+            color: #2979FF;
+            margin-bottom: 20px;
+        }
+
+        .connecting-text {
+            color: #FFFFFF;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Main Menu */
+        .menu-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .menu-card {
+            background: #333333;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .menu-card:hover {
+            transform: scale(1.02);
+            background: #3a3a3a;
+        }
+
+        .menu-card:active {
+            transform: scale(0.98);
+        }
+
+        .menu-card-icon {
+            font-size: 32px;
+            color: #2979FF;
+        }
+
+        .menu-card-label {
+            color: #FFFFFF;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Activity Screen */
+        .activity-label {
+            color: #FFFFFF;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer {
+            color: #FFFFFF;
+            font-size: 48px;
+            font-weight: 700;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ready-text {
+            color: #BDBDBD;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        /* Gesture Feedback */
+        .gesture-icon {
+            font-size: 56px;
+            color: #00E676;
+            margin: 16px 0;
+        }
+
+        .gesture-text {
+            color: #FFFFFF;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .gesture-detected {
+            color: #BDBDBD;
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        /* Disconnected Screen */
+        .disconnected-text {
+            color: #FF1744;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Prototype Controls */
+        .prototype-controls {
+            background: #2a2a2a;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 280px;
+        }
+
+        .prototype-title {
+            color: #BDBDBD;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #444;
+        }
+
+        .control-section {
+            margin-bottom: 24px;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            color: #BDBDBD;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-btn {
+            background: #333333;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #FFFFFF;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-btn:hover {
+            background: #444;
+        }
+
+        .control-btn:active {
+            background: #555;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .control-btn-icon {
+            font-size: 16px;
+            color: #2979FF;
+        }
+
+        .status-info {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .status-label {
+            color: #BDBDBD;
+        }
+
+        .status-value {
+            color: #FFFFFF;
+            font-weight: 500;
+        }
+
+        .status-value.connected {
+            color: #00E676;
+        }
+
+        .status-value.disconnected {
+            color: #FF1744;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="prototype-container">
+        <!-- Smartwatch -->
+        <div class="smartwatch-frame">
+            <div class="smartwatch-screen">
+                <div class="connection-indicator" id="connectionIndicator"></div>
+                
+                <!-- Connection Screen -->
+                <div class="screen active" id="connectionScreen">
+                    <div class="bluetooth-icon">📶</div>
+                    <div class="connecting-text pulse">Conectando...</div>
+                </div>
+
+                <!-- Main Menu Screen -->
+                <div class="screen" id="menuScreen">
+                    <div class="menu-cards">
+                        <div class="menu-card" onclick="enterPresentation()">
+                            <div class="menu-card-icon">📽️</div>
+                            <div class="menu-card-label">Presentación</div>
+                        </div>
+                        <div class="menu-card" onclick="enterMusic()">
+                            <div class="menu-card-icon">🎵</div>
+                            <div class="menu-card-label">Música</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Presentation Screen -->
+                <div class="screen" id="presentationScreen">
+                    <div class="activity-label">Presentación</div>
+                    <div class="timer" id="presentationTimer">05:30</div>
+                    <div class="ready-text" id="presentationStatus">Listo para gestos</div>
+                </div>
+
+                <!-- Music Screen -->
+                <div class="screen" id="musicScreen">
+                    <div class="activity-label">Música</div>
+                    <div class="timer" id="musicTimer">03:45</div>
+                    <div class="ready-text" id="musicStatus">Listo para gestos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prototype Controls -->
+        <div class="prototype-controls">
+            <div class="prototype-title">🧪 Controles de Prototipo</div>
+            
+            <div class="control-section" id="gestureControls" style="display: none;">
+                <div class="control-label">Gestos Simulados</div>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="simulateSwipeRight()">
+                        <span class="control-btn-icon">👉</span>
+                        Swipe Right
+                    </button>
+                    <button class="control-btn" onclick="simulateSwipeLeft()">
+                        <span class="control-btn-icon">👈</span>
+                        Swipe Left
+                    </button>
+                    <button class="control-btn" onclick="simulatePlayPause()" id="playPauseBtn">
+                        <span class="control-btn-icon">▶️</span>
+                        Play/Pause
+                    </button>
+                    <button class="control-btn" onclick="simulateUnknownGesture()">
+                        <span class="control-btn-icon">❓</span>
+                        Unknown Gesture
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-label">Estado de Conexión</div>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="simulateDisconnect()" id="disconnectBtn">
+                        <span class="control-btn-icon">🔌</span>
+                        Simular Desconexión
+                    </button>
+                    <button class="control-btn" onclick="simulateReconnect()" id="reconnectBtn" style="display: none;">
+                        <span class="control-btn-icon">🔌</span>
+                        Simular Reconexión
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-label">Navegación</div>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="goBack()" id="backBtn" style="display: none;">
+                        <span class="control-btn-icon">⬅️</span>
+                        Volver al Menú
+                    </button>
+                </div>
+            </div>
+
+            <div class="status-info">
+                <div class="status-row">
+                    <span class="status-label">Estado:</span>
+                    <span class="status-value" id="statusValue">Conectando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentState = 'connecting';
+        let currentActivity = null;
+        let isConnected = false;
+        let isPlaying = false;
+        let presentationTime = 330; // 5:30 in seconds
+        let musicTime = 225; // 3:45 in seconds
+
+        // DOM Elements
+        const screens = {
+            connection: document.getElementById('connectionScreen'),
+            menu: document.getElementById('menuScreen'),
+            presentation: document.getElementById('presentationScreen'),
+            music: document.getElementById('musicScreen')
+        };
+
+        const connectionIndicator = document.getElementById('connectionIndicator');
+        const gestureControls = document.getElementById('gestureControls');
+        const backBtn = document.getElementById('backBtn');
+        const statusValue = document.getElementById('statusValue');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const reconnectBtn = document.getElementById('reconnectBtn');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+
+        // Screen management
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+
+        // Connection flow
+        function startConnection() {
+            setTimeout(() => {
+                isConnected = true;
+                currentState = 'menu';
+                showScreen('menu');
+                connectionIndicator.classList.remove('disconnected');
+                statusValue.textContent = 'Conectado';
+                statusValue.classList.add('connected');
+                statusValue.classList.remove('disconnected');
+            }, 2000);
+        }
+
+        // Navigation
+        function enterPresentation() {
+            currentActivity = 'presentation';
+            currentState = 'activity';
+            showScreen('presentation');
+            gestureControls.style.display = 'block';
+            backBtn.style.display = 'block';
+            playPauseBtn.style.display = 'none';
+        }
+
+        function enterMusic() {
+            currentActivity = 'music';
+            currentState = 'activity';
+            showScreen('music');
+            gestureControls.style.display = 'block';
+            backBtn.style.display = 'block';
+            playPauseBtn.style.display = 'block';
+        }
+
+        function goBack() {
+            currentActivity = null;
+            currentState = 'menu';
+            showScreen('menu');
+            gestureControls.style.display = 'none';
+            backBtn.style.display = 'none';
+        }
+
+        // Gesture feedback
+        function showGestureFeedback(icon, text, statusElement) {
+            statusElement.innerHTML = `
+                <div class="gesture-icon fade-in">${icon}</div>
+                <div class="gesture-text fade-in">${text}</div>
+                <div class="gesture-detected fade-in">Gesto detectado</div>
+            `;
+            
+            // Simulate visual vibration
+            document.querySelector('.smartwatch-frame').style.animation = 'shake 0.1s ease-in-out';
+            setTimeout(() => {
+                document.querySelector('.smartwatch-frame').style.animation = '';
+            }, 100);
+        }
+
+        function resetToReady(statusElement, activity) {
+            setTimeout(() => {
+                statusElement.innerHTML = 'Listo para gestos';
+            }, 1000);
+        }
+
+        // Presentation gestures
+        function simulateSwipeRight() {
+            if (!isConnected || currentActivity !== 'presentation') return;
+            
+            const statusElement = document.getElementById('presentationStatus');
+            showGestureFeedback('👉', 'Siguiente diapositiva', statusElement);
+            resetToReady(statusElement, 'presentation');
+        }
+
+        function simulateSwipeLeft() {
+            if (!isConnected || currentActivity !== 'presentation') return;
+            
+            const statusElement = document.getElementById('presentationStatus');
+            showGestureFeedback('👈', 'Diapositiva anterior', statusElement);
+            resetToReady(statusElement, 'presentation');
+        }
+
+        // Music gestures
+        function simulateSwipeRightMusic() {
+            if (!isConnected || currentActivity !== 'music') return;
+            
+            const statusElement = document.getElementById('musicStatus');
+            showGestureFeedback('👉', 'Siguiente canción', statusElement);
+            resetToReady(statusElement, 'music');
+        }
+
+        function simulateSwipeLeftMusic() {
+            if (!isConnected || currentActivity !== 'music') return;
+            
+            const statusElement = document.getElementById('musicStatus');
+            showGestureFeedback('👈', 'Canción anterior', statusElement);
+            resetToReady(statusElement, 'music');
+        }
+
+        function simulatePlayPause() {
+            if (!isConnected || currentActivity !== 'music') return;
+            
+            isPlaying = !isPlaying;
+            const statusElement = document.getElementById('musicStatus');
+            const icon = isPlaying ? '⏸️' : '▶️';
+            const text = isPlaying ? 'Reproduciendo' : 'Pausado';
+            showGestureFeedback(icon, text, statusElement);
+            resetToReady(statusElement, 'music');
+        }
+
+        // Unknown gesture
+        function simulateUnknownGesture() {
+            if (!isConnected || !currentActivity) return;
+            
+            const statusElement = currentActivity === 'presentation' 
+                ? document.getElementById('presentationStatus') 
+                : document.getElementById('musicStatus');
+            
+            statusElement.innerHTML = `
+                <div class="gesture-icon fade-in" style="color: #BDBDBD; font-size: 40px;">?</div>
+                <div class="gesture-text fade-in" style="color: #BDBDBD;">Gesto no reconocido</div>
+            `;
+            
+            resetToReady(statusElement, currentActivity);
+        }
+
+        // Unified gesture handlers
+        function simulateSwipeRight() {
+            if (!isConnected) return;
+            
+            if (currentActivity === 'presentation') {
+                const statusElement = document.getElementById('presentationStatus');
+                showGestureFeedback('👉', 'Siguiente diapositiva', statusElement);
+                resetToReady(statusElement, 'presentation');
+            } else if (currentActivity === 'music') {
+                const statusElement = document.getElementById('musicStatus');
+                showGestureFeedback('👉', 'Siguiente canción', statusElement);
+                resetToReady(statusElement, 'music');
+            }
+        }
+
+        function simulateSwipeLeft() {
+            if (!isConnected) return;
+            
+            if (currentActivity === 'presentation') {
+                const statusElement = document.getElementById('presentationStatus');
+                showGestureFeedback('👈', 'Diapositiva anterior', statusElement);
+                resetToReady(statusElement, 'presentation');
+            } else if (currentActivity === 'music') {
+                const statusElement = document.getElementById('musicStatus');
+                showGestureFeedback('👈', 'Canción anterior', statusElement);
+                resetToReady(statusElement, 'music');
+            }
+        }
+
+        // Connection simulation
+        function simulateDisconnect() {
+            isConnected = false;
+            connectionIndicator.classList.add('disconnected');
+            statusValue.textContent = 'Desconectado';
+            statusValue.classList.remove('connected');
+            statusValue.classList.add('disconnected');
+            
+            // Show disconnected state in current screen
+            if (currentActivity === 'presentation') {
+                const statusElement = document.getElementById('presentationStatus');
+                statusElement.innerHTML = `<div class="disconnected-text fade-in">Conexión perdida</div>`;
+            } else if (currentActivity === 'music') {
+                const statusElement = document.getElementById('musicStatus');
+                statusElement.innerHTML = `<div class="disconnected-text fade-in">Conexión perdida</div>`;
+            } else if (currentState === 'menu') {
+                // Show disconnected message in menu
+                showScreen('connection');
+                document.querySelector('.connecting-text').textContent = 'Conexión perdida';
+                document.querySelector('.connecting-text').style.color = '#FF1744';
+            }
+            
+            disconnectBtn.style.display = 'none';
+            reconnectBtn.style.display = 'block';
+        }
+
+        function simulateReconnect() {
+            isConnected = true;
+            connectionIndicator.classList.remove('disconnected');
+            statusValue.textContent = 'Conectado';
+            statusValue.classList.add('connected');
+            statusValue.classList.remove('disconnected');
+            
+            // Return to appropriate screen
+            if (currentActivity) {
+                showScreen(currentActivity);
+                const statusElement = currentActivity === 'presentation' 
+                    ? document.getElementById('presentationStatus') 
+                    : document.getElementById('musicStatus');
+                statusElement.innerHTML = 'Listo para gestos';
+            } else {
+                showScreen('menu');
+            }
+            
+            disconnectBtn.style.display = 'block';
+            reconnectBtn.style.display = 'none';
+        }
+
+        // Initialize
+        startConnection();
+    </script>
+</body>
+</html>
